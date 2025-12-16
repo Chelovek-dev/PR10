@@ -13,6 +13,7 @@ namespace ApiGigaChat
         static string ClientId = "019b2840-ca25-7a46-92f5-37031757eeba";
         static string AuthorizationKey = "MDE5YjI4NDAtY2EyNS03YTQ2LTkyZjUtMzcwMzE3NTdlZWJhOmUwMzNjNDI4LTAwM2UtNGRiMC04YjY3LTY1YTIxYmY3MzE4Nw==";
 
+        static List<dynamic> chatHistory = new List<dynamic>();
         public static async Task<string> GetToken(string rqUID, string bearer)
         {
             string ReturnToken = null;
@@ -66,6 +67,9 @@ namespace ApiGigaChat
                 string Message = Console.ReadLine();
                 ResponseMessage Answer = await GetAnswer(Token, Message);
                 Console.WriteLine("Ответ: " + Answer.choices[0].message.content);
+
+                chatHistory.Add(new { role = "user", content = Message });
+                chatHistory.Add(new { role = "assistant", content = Answer.choices[0].message.content });
             }
         }
 
@@ -85,19 +89,19 @@ namespace ApiGigaChat
                     httpRequestMessage.Headers.Add("Accept", "application/json");
                     httpRequestMessage.Headers.Add("Authorization", $"Bearer {token}");
 
+                    var messagesList = new List<object>();
+                    foreach (var msg in chatHistory)
+                    {
+                        messagesList.Add(msg);
+                    }
+                    messagesList.Add(new { role = "user", content = message });
+
                     var DataRequest = new
                     {
                         model = "GigaChat",
                         stream = false,
                         repetition_penalty = 1,
-                        messages = new[]
-                        {
-                            new
-                            {
-                                role = "user",
-                                content = message
-                            }
-                        }
+                        messages = messagesList
                     };
 
                     string JsonContent = JsonConvert.SerializeObject(DataRequest);
@@ -109,6 +113,10 @@ namespace ApiGigaChat
                     {
                         string ResponseContent = await Response.Content.ReadAsStringAsync();
                         responseMessage = JsonConvert.DeserializeObject<ResponseMessage>(ResponseContent);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Ошибка при получении ответа: {Response.StatusCode}");
                     }
                 }
             }
