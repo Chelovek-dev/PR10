@@ -12,14 +12,15 @@ namespace ApiGigaChat
     {
         static string ClientId = "019b2840-ca25-7a46-92f5-37031757eeba";
         static string AuthorizationKey = "MDE5YjI4NDAtY2EyNS03YTQ2LTkyZjUtMzcwMzE3NTdlZWJhOmUwMzNjNDI4LTAwM2UtNGRiMC04YjY3LTY1YTIxYmY3MzE4Nw==";
+
         public static async Task<string> GetToken(string rqUID, string bearer)
         {
             string ReturnToken = null;
-            string Url = "https://ngw.devices.sberbank.ru:9WU3/api/v2/oauth";
+            string Url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth";
 
             using (HttpClientHandler Handler = new HttpClientHandler())
             {
-                Handler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true;
+                Handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
 
                 using (HttpClient Clien = new HttpClient(Handler))
                 {
@@ -48,6 +49,7 @@ namespace ApiGigaChat
 
             return ReturnToken;
         }
+
         static async Task Main(string[] args)
         {
             string Token = await GetToken(ClientId, AuthorizationKey);
@@ -66,6 +68,7 @@ namespace ApiGigaChat
                 Console.WriteLine("Ответ: " + Answer.choices[0].message.content);
             }
         }
+
         public static async Task<ResponseMessage> GetAnswer(string token, string message)
         {
             ResponseMessage responseMessage = null;
@@ -73,34 +76,34 @@ namespace ApiGigaChat
 
             using (HttpClientHandler Handler = new HttpClientHandler())
             {
-                Handler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true;
+                Handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
 
                 using (HttpClient Client = new HttpClient(Handler))
                 {
-                    HttpRequestMessage Request = new HttpRequestMessage(HttpMethod.Post, Url);
+                    HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, Url);
 
-                    Request.Headers.Add("Accept", "application/json");
-                    Request.Headers.Add("Authorization", $"Bearer {token}");
+                    httpRequestMessage.Headers.Add("Accept", "application/json");
+                    httpRequestMessage.Headers.Add("Authorization", $"Bearer {token}");
 
-                    var DataRequest = new Request()
+                    var DataRequest = new
                     {
                         model = "GigaChat",
                         stream = false,
                         repetition_penalty = 1,
-                        messages = new List<Request.Message>
-                {
-                    new Request.Message()
-                    {
-                        role = "user",
-                        content = message
-                    }
-                }
+                        messages = new[]
+                        {
+                            new
+                            {
+                                role = "user",
+                                content = message
+                            }
+                        }
                     };
 
                     string JsonContent = JsonConvert.SerializeObject(DataRequest);
-                    Request.Content = new StringContent(JsonContent, Encoding.UTF8, "application/json");
+                    httpRequestMessage.Content = new StringContent(JsonContent, Encoding.UTF8, "application/json");
 
-                    HttpResponseMessage Response = await Client.SendAsync(Request);
+                    HttpResponseMessage Response = await Client.SendAsync(httpRequestMessage);
 
                     if (Response.IsSuccessStatusCode)
                     {
