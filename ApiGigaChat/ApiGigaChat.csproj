@@ -49,6 +49,11 @@
     <Compile Include="Models\Request.cs" />
     <Compile Include="Models\Response\ResponseMessage.cs" />
     <Compile Include="Models\Response\ResponseToken.cs" />
+    <Compile Include="Models\Response\YandexGPTResponce.cs" />
+    <Compile Include="Models\YandexGPTAlternative.cs" />
+    <Compile Include="Models\YandexGPTMessage.cs" />
+    <Compile Include="Models\YandexGPTResult.cs" />
+    <Compile Include="Models\YandexGPTUsage.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
